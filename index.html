@@ -299,7 +299,6 @@
   }
   .section-title {
     font-family: var(--display);
-    font-size: 3.5rem;
     color: var(--white);
     letter-spacing: 4px;
   }
@@ -411,14 +410,12 @@
   /* ── ABOUT ── */
   .about-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: start;
   }
 
   .about-text {
     font-size: 0.8rem;
-    line-height: 2;
     color: var(--text-dim);
   }
   .about-text p { margin-bottom: 1.2rem; }
@@ -547,6 +544,16 @@
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--black); }
   ::-webkit-scrollbar-thumb { background: var(--red-dim); }
+  
+  @media screen and (min-width: 768px) {
+  .about-grid{
+  	grid-template-columns: 1fr 1fr;
+  }
+  .section-title {
+  font-size: 3.5rem;
+	}
+  
+}
 </style>
 </head>
 <body>
