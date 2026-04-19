@@ -74,6 +74,8 @@
     border-bottom: 1px solid var(--border);
     background: rgba(5,5,7,0.85);
     backdrop-filter: blur(12px);
+    max-width: 1100px;
+    margin: 0 auto;
   }
 
   .nav-logo {
@@ -82,12 +84,17 @@
     letter-spacing: 3px;
     color: var(--red);
     text-shadow: 0 0 20px var(--red-glow);
+    flex: 1;
+    margin: 0;
   }
 
   .nav-links {
     display: flex;
     gap: 2.5rem;
     list-style: none;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
   }
 
   .nav-links a {
@@ -107,6 +114,8 @@
     font-size: 0.65rem;
     color: var(--text-dim);
     letter-spacing: 1px;
+    flex: 1;
+    justify-content: right;
   }
   .status-dot {
     width: 6px; height: 6px;
@@ -511,10 +520,12 @@
     padding: 2rem 3rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
     font-size: 0.6rem;
     color: var(--text-dim);
     letter-spacing: 2px;
+    max-width: 1100px;
+    margin: 0 auto;
   }
   .footer-logo { color: var(--red); font-family: var(--display); font-size: 1.2rem; letter-spacing: 3px; }
 
@@ -789,9 +800,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">NT3P</div>
-  <div>SECURITY RESEARCHER // CVE AUTHOR</div>
-  <div>© 2026 — TODOS LOS DERECHOS RESERVADOS</div>
+  <span class="footer-logo">N</span>othing is<span class="footer-logo"> T</span>rue, <span class="footer-logo"> 3</span>verything is <span class="footer-logo"> P</span>ermitted
 </footer>
 
 </body>
