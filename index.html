@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NT3P — Security Researcher</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ff1a2e;
+    --red-dim: #cc0020;
+    --red-glow: rgba(255,26,46,0.3);
+    --red-faint: rgba(255,26,46,0.08);
+    --black: #050507;
+    --dark: #0a0a0d;
+    --card: #0d0d10;
+    --border: rgba(255,26,46,0.25);
+    --text: #c8c8d0;
+    --text-dim: #666675;
+    --white: #f0f0f5;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--mono);
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── SCANLINES ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 150px;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 3rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,5,7,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-shadow: 0 0 20px var(--red-glow);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--red); }
+
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 6rem 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,26,46,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,26,46,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+  }
+
+  .hero-bg-radial {
+    position: absolute;
+    width: 800px; height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,26,46,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    color: var(--red);
+    border: 1px solid var(--border);
+    padding: 0.3rem 1rem;
+    margin-bottom: 2rem;
+    background: var(--red-faint);
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .hero-name {
+    font-family: var(--display);
+    font-size: clamp(7rem, 20vw, 14rem);
+    line-height: 0.9;
+    color: var(--white);
+    letter-spacing: 8px;
+    margin-bottom: 1rem;
+    position: relative;
+    animation: fadeUp 0.7s ease 0.1s both;
+  }
+
+  /* GLITCH */
+  .hero-name::before,
+  .hero-name::after {
+    content: 'NT3P';
+    position: absolute;
+    inset: 0;
+    font-family: var(--display);
+    font-size: inherit;
+    letter-spacing: inherit;
+  }
+  .hero-name::before {
+    color: var(--red);
+    animation: glitch1 4s infinite;
+    clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  }
+  .hero-name::after {
+    color: #00aaff;
+    animation: glitch2 4s infinite;
+    clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  }
+
+  @keyframes glitch1 {
+    0%, 90%, 100% { transform: none; opacity: 0; }
+    91% { transform: translateX(-4px); opacity: 0.8; }
+    92% { transform: translateX(4px); opacity: 0; }
+    93% { transform: translateX(-2px); opacity: 0.6; }
+    94%, 100% { opacity: 0; }
+  }
+  @keyframes glitch2 {
+    0%, 90%, 100% { transform: none; opacity: 0; }
+    91.5% { transform: translateX(4px); opacity: 0.8; }
+    92.5% { transform: translateX(-4px); opacity: 0; }
+    93.5% { transform: translateX(2px); opacity: 0.6; }
+    94%, 100% { opacity: 0; }
+  }
+
+  .hero-subtitle {
+    font-size: 0.75rem;
+    letter-spacing: 5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+    animation: fadeUp 0.7s ease 0.2s both;
+  }
+
+  .hero-desc {
+    max-width: 500px;
+    margin: 0 auto 3rem;
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--text-dim);
+    animation: fadeUp 0.7s ease 0.3s both;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    animation: fadeUp 0.7s ease 0.4s both;
+  }
+
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--display);
+    font-size: 3rem;
+    color: var(--red);
+    line-height: 1;
+    text-shadow: 0 0 30px var(--red-glow);
+  }
+  .stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 3rem;
+    margin: 1rem 0;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-label {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 5rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: 3.5rem;
+    color: var(--white);
+    letter-spacing: 4px;
+  }
+  .section-num {
+    font-size: 0.65rem;
+    color: var(--red);
+    letter-spacing: 2px;
+  }
+
+  /* ── CVE CARDS ── */
+  .cve-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .cve-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .cve-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--red);
+    box-shadow: 0 0 30px rgba(255,26,46,0.15), 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .cve-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .cve-card:hover::before { opacity: 1; }
+
+  .cve-header {
+    background: rgba(255,26,46,0.06);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cve-id {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--red-glow);
+  }
+
+  .cve-severity {
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 0.2rem 0.6rem;
+    background: var(--red-faint);
+  }
+
+  .cve-body {
+    padding: 1.5rem;
+  }
+
+  .cve-vendor {
+    font-family: var(--display);
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    color: var(--white);
+    margin-bottom: 1rem;
+  }
+
+  .cve-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+  }
+  .meta-key { color: var(--text-dim); }
+  .meta-val { color: var(--text); }
+
+  .cve-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .check-icon { color: var(--red); }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-text {
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--text-dim);
+  }
+  .about-text p { margin-bottom: 1.2rem; }
+  .about-highlight { color: var(--red); }
+
+  .terminal-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0;
+  }
+
+  .terminal-bar {
+    background: rgba(255,26,46,0.1);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .t-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .t-dot.red { background: var(--red); }
+  .t-dot.yellow { background: #ffcc00; }
+  .t-dot.green { background: #00cc66; }
+
+  .terminal-body {
+    padding: 1.5rem;
+    font-size: 0.72rem;
+    line-height: 1.9;
+  }
+  .t-prompt { color: var(--red); }
+  .t-cmd { color: var(--white); }
+  .t-out { color: var(--text-dim); }
+  .t-green { color: #00cc66; }
+  .t-cursor {
+    display: inline-block;
+    width: 8px; height: 1em;
+    background: var(--red);
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── CERT ── */
+  .cert-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .cert-card:hover {
+    border-color: var(--red);
+    box-shadow: 0 0 30px rgba(255,26,46,0.1);
+  }
+  .cert-card::after {
+    content: 'VERIFIED';
+    position: absolute;
+    top: 1.2rem; right: -2rem;
+    background: var(--red);
+    color: var(--black);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    padding: 0.3rem 3rem;
+    transform: rotate(35deg);
+  }
+
+  .cert-icon {
+    width: 56px; height: 56px;
+    border: 1px solid var(--border);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--red-faint);
+  }
+  .cert-icon svg { width: 28px; height: 28px; }
+
+  .cert-info { flex: 1; }
+  .cert-title {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    color: var(--white);
+    letter-spacing: 3px;
+    margin-bottom: 0.3rem;
+  }
+  .cert-issuer { color: var(--red); font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 0.8rem; }
+  .cert-meta { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; line-height: 1.8; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  .footer-logo { color: var(--red); font-family: var(--display); font-size: 1.2rem; letter-spacing: 3px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cve-card:nth-child(1) { animation-delay: 0.1s; }
+  .cve-card:nth-child(2) { animation-delay: 0.2s; }
+  .cve-card:nth-child(3) { animation-delay: 0.3s; }
+
+  /* ── SCROLL BAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--red-dim); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">NT3P</div>
+  <ul class="nav-links">
+    <li><a href="#cves">CVEs</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#certs">Certs</a></li>
+  </ul>
+  <div class="nav-status">
+    <span class="status-dot"></span>
+    ACTIVE // PENTESTER
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-radial"></div>
+  <div class="hero-inner">
+    <div class="hero-tag">⬛ SECURITY RESEARCHER &amp; PENETRATION TESTER</div>
+    <h1 class="hero-name">NT3P</h1>
+    <p class="hero-subtitle divider-label">Victor Rodriguez</p>
+    <p class="hero-subtitle">Vulnerability Researcher · CVE Author · Red Team</p>
+    <p class="hero-desc">
+      Identificando vulnerabilidades críticas en sistemas empresariales.<br>
+      Especializado en penetration testing y divulgación responsable de CVEs.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">3</div>
+        <div class="stat-label">CVEs Publicados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Vendors Afectados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1</div>
+        <div class="stat-label">Certificación</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-label">// CVE DATABASE</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- CVEs -->
+<section id="cves">
+  <div class="section-header">
+    <div class="section-num">01 //</div>
+    <h2 class="section-title">VULNERABILIDADES</h2>
+  </div>
+  <div class="cve-grid">
+
+    <!-- CVE 1 -->
+    <div class="cve-card">
+      <div class="cve-header">
+        <span class="cve-id">CVE-2026-1636</span>
+        <span class="cve-severity">REPORTED</span>
+      </div>
+      <div class="cve-body">
+        <div class="cve-vendor">LENOVO</div>
+        <div class="cve-meta">
+          <div class="meta-row">
+            <span class="meta-key">PUBLICADO</span>
+            <span class="meta-val">2026-04-14</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">INVESTIGADOR</span>
+            <span class="meta-val">NT3P</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">DIVULGACIÓN</span>
+            <span class="meta-val">RESPONSABLE</span>
+          </div>
+        </div>
+      </div>
+      <div class="cve-footer">
+        <span class="check-icon">✔</span>
+        VERIFICADO POR MITRE
+      </div>
+    </div>
+
+    <!-- CVE 2 -->
+    <div class="cve-card">
+      <div class="cve-header">
+        <span class="cve-id">CVE-2026-4667</span>
+        <span class="cve-severity">REPORTED</span>
+      </div>
+      <div class="cve-body">
+        <div class="cve-vendor">HP INC.</div>
+        <div class="cve-meta">
+          <div class="meta-row">
+            <span class="meta-key">PUBLICADO</span>
+            <span class="meta-val">ABR. 2026</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">INVESTIGADOR</span>
+            <span class="meta-val">NT3P</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">DIVULGACIÓN</span>
+            <span class="meta-val">RESPONSABLE</span>
+          </div>
+        </div>
+      </div>
+      <div class="cve-footer">
+        <span class="check-icon">✔</span>
+        VERIFICADO POR MITRE
+      </div>
+    </div>
+
+    <!-- CVE 3 -->
+    <div class="cve-card">
+      <div class="cve-header">
+        <span class="cve-id">CVE-2026-2915</span>
+        <span class="cve-severity">REPORTED</span>
+      </div>
+      <div class="cve-body">
+        <div class="cve-vendor">HP INC.</div>
+        <div class="cve-meta">
+          <div class="meta-row">
+            <span class="meta-key">PUBLICADO</span>
+            <span class="meta-val">MAR. 2026</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">INVESTIGADOR</span>
+            <span class="meta-val">NT3P</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">DIVULGACIÓN</span>
+            <span class="meta-val">RESPONSABLE</span>
+          </div>
+        </div>
+      </div>
+      <div class="cve-footer">
+        <span class="check-icon">✔</span>
+        VERIFICADO POR MITRE
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-label">// ABOUT</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header">
+    <div class="section-num">02 //</div>
+    <h2 class="section-title">SOBRE MÍ</h2>
+  </div>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        Soy <span class="about-highlight">NT3P</span>, investigador de seguridad especializado en
+        <span class="about-highlight">penetration testing</span> y descubrimiento de vulnerabilidades
+        en sistemas empresariales de alto impacto.
+      </p>
+      <p>
+        Mi trabajo se enfoca en la <span class="about-highlight">divulgación responsable</span>,
+        colaborando directamente con los vendors afectados para mitigar riesgos
+        antes de cualquier publicación pública.
+      </p>
+      <p>
+        He identificado y reportado vulnerabilidades críticas en productos de
+        <span class="about-highlight">Lenovo</span>, <span class="about-highlight">Google</span> y <span class="about-highlight">HP</span>,
+        obteniendo reconocimiento oficial mediante la asignación de CVEs por parte de MITRE.
+      </p>
+      <p>
+        Actualmente certificado como <span class="about-highlight">Junior Penetration Tester</span>
+        por INE, continuamente ampliando conocimientos en técnicas avanzadas de red team y seguridad ofensiva.
+      </p>
+    </div>
+    <div class="terminal-block">
+      <div class="terminal-bar">
+        <span class="t-dot red"></span>
+        <span class="t-dot yellow"></span>
+        <span class="t-dot green"></span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-prompt">nt3p@kali</span>:~$ <span class="t-cmd">whoami</span></div>
+        <div class="t-out">NT3P — Security Researcher</div>
+        <br>
+        <div><span class="t-prompt">nt3p@kali</span>:~$ <span class="t-cmd">cat skills.txt</span></div>
+        <div class="t-out">→ Penetration Testing</div>
+        <div class="t-out">→ Vulnerability Research</div>
+        <div class="t-out">→ CVE Reporting &amp; Disclosure</div>
+        <div class="t-out">→ Network Security</div>
+        <div class="t-out">→ Web App Security</div>
+        <br>
+        <div><span class="t-prompt">nt3p@kali</span>:~$ <span class="t-cmd">cat cve_count.txt</span></div>
+        <div class="t-green">✔ 3 CVEs confirmados</div>
+        <div class="t-green">✔ Lenovo, HP Inc.</div>
+        <br>
+        <div><span class="t-prompt">nt3p@kali</span>:~$ <span class="t-cmd">status</span></div>
+        <div class="t-green">● DISPONIBLE PARA PROYECTOS</div>
+        <br>
+        <div><span class="t-prompt">nt3p@kali</span>:~$ <span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-label">// CERTIFICATIONS</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- CERTS -->
+<section id="certs">
+  <div class="section-header">
+    <div class="section-num">03 //</div>
+    <h2 class="section-title">CERTIFICACIONES</h2>
+  </div>
+
+  <div class="cert-card">
+    <div class="cert-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ff1a2e" stroke-width="1.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="cert-info">
+      <div class="cert-title">JUNIOR PENETRATION TESTER</div>
+      <div class="cert-issuer">INE — ECURITY</div>
+      <div class="cert-meta">
+        ID DE CREDENCIAL: 150173802<br>
+        EXPEDICIÓN: JUNIO 2025 &nbsp;·&nbsp; VENCIMIENTO: JUNIO 2028<br>
+        ESTADO: ACTIVA &amp; VERIFICADA
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">NT3P</div>
+  <div>SECURITY RESEARCHER // CVE AUTHOR</div>
+  <div>© 2026 — TODOS LOS DERECHOS RESERVADOS</div>
+</footer>
+
+</body>
+</html>
