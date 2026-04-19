@@ -507,6 +507,121 @@
     animation: blink 1s step-end infinite;
   }
   @keyframes blink { 50% { opacity: 0; } }
+  
+  /* ── EXPERIENCE ── */
+  .exp-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+ 
+  .exp-item {
+    display: flex;
+    gap: 2rem;
+    align-items: stretch;
+  }
+ 
+  .exp-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding-top: 1.6rem;
+  }
+ 
+  .exp-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 12px var(--red), 0 0 24px rgba(255,26,46,0.3);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .exp-dot--past {
+    background: transparent;
+    border: 1px solid var(--text-dim);
+    box-shadow: none;
+  }
+ 
+  .exp-line {
+    width: 1px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--red), transparent);
+    margin-top: 6px;
+    min-height: 40px;
+  }
+ 
+  .exp-card {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .exp-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--red);
+    box-shadow: 0 0 12px var(--red-glow);
+  }
+  .exp-card--past::before {
+    background: var(--text-dim);
+    box-shadow: none;
+  }
+  .exp-card:hover {
+    border-color: var(--red);
+    box-shadow: 0 0 24px rgba(255,26,46,0.1);
+  }
+ 
+  .exp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.8rem;
+  }
+ 
+  .exp-role {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+ 
+  .exp-company {
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+  .exp-country { color: var(--text-dim); }
+ 
+  .exp-badge {
+    font-size: 0.55rem;
+    letter-spacing: 3px;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 0.25rem 0.7rem;
+    background: var(--red-faint);
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+ 
+  .exp-duration {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .exp-icon { color: var(--red); font-size: 0.6rem; }
 
   /* ── CERT ── */
   .cert-card {
@@ -849,6 +964,54 @@
   </div>
 </section>
 
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-header">
+    <div class="section-num">03 //</div>
+    <h2 class="section-title">EXPERIENCIA</h2>
+  </div>
+ 
+  <div class="exp-timeline">
+ 
+    <div class="exp-item">
+      <div class="exp-marker">
+        <div class="exp-dot"></div>
+        <div class="exp-line"></div>
+      </div>
+      <div class="exp-card">
+        <div class="exp-card-header">
+          <div>
+            <div class="exp-role">Software Analyst Solutions Developer.</div>
+            <div class="exp-company">BBVA <span class="exp-country">· Perú</span></div>
+          </div>
+          <div class="exp-badge">ACTUAL</div>
+        </div>
+        <div class="exp-duration">
+          <span class="exp-icon">◈</span> mar. 2024 — actualidad
+        </div>
+      </div>
+    </div>
+ 
+    <div class="exp-item">
+      <div class="exp-marker">
+        <div class="exp-dot exp-dot--past"></div>
+      </div>
+      <div class="exp-card exp-card--past">
+        <div class="exp-card-header">
+          <div>
+            <div class="exp-role">Frontend Developer Cells BBVA</div>
+            <div class="exp-company">Entelgy</div>
+          </div>
+        </div>
+        <div class="exp-duration">
+          <span class="exp-icon">◈</span> jul. 2022 — abr. 2024 &nbsp;·&nbsp; 1 año 10 meses
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+</section>
+
 <!-- DIVIDER -->
 <div class="divider">
   <div class="divider-line"></div>
@@ -859,7 +1022,7 @@
 <!-- CERTS -->
 <section id="certs">
   <div class="section-header">
-    <div class="section-num">03 //</div>
+    <div class="section-num">04 //</div>
     <h2 class="section-title">CERTIFICACIONES</h2>
   </div>
 
